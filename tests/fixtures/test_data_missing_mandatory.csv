@@ -1,0 +1,2 @@
+First Name*,Surname*,Gender*,ClassifiedAsDisabled*,MedicalConditions,DateOfBirth*,Address1,Address2,PhoneNumber,TownCity,County,Country,EmergencyContactName,EmergencyContactPhone,EmergencyContactPhone2,SchoolYear,CourseID
+John,Smith,Male,No,"Diabetes, asthma",16/12/2001,12 High Street,,07700123456,London,Greater London,England,Jane Smith,07700900123,,9,101

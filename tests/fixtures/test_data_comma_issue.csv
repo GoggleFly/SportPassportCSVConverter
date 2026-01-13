@@ -1,0 +1,3 @@
+Sport Passport ID,First Name*,Surname*,Gender*,ClassifiedAsDisabled*,MedicalConditions,DateOfBirth*,Address1,Address2,PhoneNumber,TownCity,County,Postcode*,Country,EmergencyContactName,EmergencyContactPhone,EmergencyContactPhone2,Email*,SchoolYear,CourseID
+,Sarah,Connor,Female,Yes,Diabetes,asthma,uses inhaler daily,16/12/1990,42 Main Street,,07700123456,London,,SW1A 1AA,England,John Connor,07700654321,,sarah.connor@email.com,12,
+,Mike,Johnson,Male,No,Severe peanut allergy,carries EpiPen,must avoid all nuts,01/06/1985,100 Oak Avenue,Unit 5,07700999888,Manchester,,M1 1AB,England,Lisa Johnson,07700777666,,mike.j@test.org,,50

@@ -1,0 +1,2 @@
+Sport Passport ID,First Name*,Surname*,Gender*,ClassifiedAsDisabled*,MedicalConditions,DateOfBirth*,Address1,Address2,PhoneNumber,TownCity,County,Postcode*,Country,EmergencyContactName,EmergencyContactPhone,EmergencyContactPhone2,Email*,SchoolYear,CourseID
+,John,Smith,Male,No,"Diabetes, some more information",16/12/2001,12 Three Street,Hedgeworth,01284345622,London,,E1 9BR,England,Joe Smith,0123 4567890,0234 5678901,j.smith@example.com,9,99

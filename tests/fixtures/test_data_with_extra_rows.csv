@@ -1,0 +1,10 @@
+School Information
+This file contains student data
+Generated on 2024-01-01
+,,,,,,,,,,,,,,,,,,
+Sport Passport ID,First Name*,Surname*,Gender*,ClassifiedAsDisabled*,MedicalConditions,DateOfBirth*,Address1,Address2,PhoneNumber,TownCity,County,Postcode*,Country,EmergencyContactName,EmergencyContactPhone,EmergencyContactPhone2,Email*,SchoolYear,CourseID
+,John,Smith,Male,No,"Diabetes, asthma",16/12/2001,12 High Street,,07700123456,London,Greater London,E1 9BR,England,Jane Smith,07700900123,,j.smith@example.com,9,101
+,Jane,Doe,Female,No,,25/12/2001,5 Oak Road,Flat 2,07700900456,Manchester,,M1 1AA,England,,,07700900789,jane.doe@test.org,7,
+,,,,,,,,,,,,,,,,,,
+Total: 2 students
+End of report
