@@ -46,7 +46,39 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Quick Start (Recommended)
+### Interactive Mode (Best for Non-Technical Users)
+
+For users who prefer not to use command-line arguments, use the interactive executable:
+
+**macOS/Linux:**
+```bash
+# Make sure the script is executable (first time only)
+chmod +x convert_interactive.sh
+
+# Run the interactive converter
+./convert_interactive.sh
+```
+
+**Or run the Python script directly:**
+```bash
+# Make sure the script is executable (first time only)
+chmod +x converter_interactive.py
+
+# Activate virtual environment first
+source venv/bin/activate
+
+# Run the interactive converter
+python converter_interactive.py
+```
+
+The interactive mode will:
+1. Prompt you to enter the path to your input file (supports drag-and-drop from Finder/File Explorer)
+2. Prompt you to specify an output file path (or use the suggested default)
+3. Guide you through the conversion process step-by-step
+
+This is perfect if you're not comfortable with command-line arguments!
+
+### Quick Start (Command-Line Mode)
 
 Use the provided shell script which handles environment activation automatically:
 
