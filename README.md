@@ -272,3 +272,41 @@ python -m pytest tests/ -v
 # Run specific test file
 python -m pytest tests/test_interactive.py -v
 ```
+
+## Packaging and Distribution
+
+This utility can be packaged for distribution in multiple ways. See [PACKAGING.md](PACKAGING.md) for detailed instructions.
+
+### Quick Start: Build for Distribution
+
+**Option 1: Python Package (pip installable)**
+```bash
+chmod +x build-package.sh
+./build-package.sh
+# Creates .whl file in dist/ directory
+```
+
+**Option 2: Standalone Executable (interactive version, no Python required)**
+```bash
+chmod +x build-executable.sh
+./build-executable.sh
+# Creates interactive executable in dist/ directory
+```
+
+After building, distribute the files from the `dist/` directory to your users.
+
+### Installation from Package
+
+Users with Python can install from the wheel file:
+```bash
+pip install dist/sport-passport-csv-converter-*.whl
+```
+
+After installation, users can run:
+```bash
+sport-passport-converter input.xlsx
+# or
+sp-converter input.xlsx
+```
+
+For more details on packaging, distribution options, and platform-specific instructions, see [PACKAGING.md](PACKAGING.md).
