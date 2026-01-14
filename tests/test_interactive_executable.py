@@ -491,3 +491,126 @@ class TestPathHandlingEdgeCases:
         
         # Should still have .csv extension (lowercase normalized)
         assert result.suffix == '.csv'
+    
+    @patch('builtins.input')
+    @patch('builtins.print')
+    def test_input_file_quoted_path_with_spaces(self, mock_print, mock_input, tmp_path):
+        """Should handle quoted file paths with spaces."""
+        test_file = tmp_path / "file with spaces.csv"
+        test_file.write_text("Header\nValue\n")
+        
+        # Test with double quotes
+        mock_input.return_value = f'"{test_file}"'
+        result = converter_interactive.get_input_file()
+        assert result == test_file.resolve()
+        
+        # Test with single quotes
+        mock_input.return_value = f"'{test_file}'"
+        result = converter_interactive.get_input_file()
+        assert result == test_file.resolve()
+    
+    @patch('builtins.input')
+    @patch('builtins.print')
+    def test_input_file_trailing_whitespace_after_extension(self, mock_print, mock_input, tmp_path):
+        """Should trim trailing whitespace after file extension."""
+        test_file = tmp_path / "test.csv"
+        test_file.write_text("Header\nValue\n")
+        
+        # Test with trailing space
+        mock_input.return_value = f"{test_file} "
+        result = converter_interactive.get_input_file()
+        assert result == test_file.resolve()
+        
+        # Test with trailing spaces
+        mock_input.return_value = f"{test_file}   "
+        result = converter_interactive.get_input_file()
+        assert result == test_file.resolve()
+        
+        # Test with space before extension - should clean to normal extension
+        # Create a file with normal name
+        test_file2 = tmp_path / "test.csv"
+        test_file2.write_text("Header\nValue\n")
+        # User enters path with space before extension
+        mock_input.return_value = str(tmp_path / "test .csv")
+        result = converter_interactive.get_input_file()
+        # Should resolve to the cleaned path (test.csv)
+        assert result == test_file2.resolve()
+    
+    @patch('builtins.input')
+    @patch('builtins.print')
+    def test_output_file_quoted_path_with_spaces(self, mock_print, mock_input, tmp_path):
+        """Should handle quoted output paths with spaces."""
+        input_file = tmp_path / "input.xlsx"
+        input_file.write_text("dummy")
+        
+        output_file = tmp_path / "output with spaces.csv"
+        
+        # Test with double quotes
+        mock_input.return_value = f'"{output_file}"'
+        result = converter_interactive.get_output_file(input_file)
+        assert result == output_file.resolve()
+        
+        # Test with single quotes
+        mock_input.return_value = f"'{output_file}'"
+        result = converter_interactive.get_output_file(input_file)
+        assert result == output_file.resolve()
+    
+    @patch('builtins.input')
+    @patch('builtins.print')
+    def test_output_file_trailing_whitespace_after_extension(self, mock_print, mock_input, tmp_path):
+        """Should trim trailing whitespace after file extension in output path."""
+        input_file = tmp_path / "input.xlsx"
+        input_file.write_text("dummy")
+        
+        output_file = tmp_path / "output.csv"
+        
+        # Test with trailing space
+        mock_input.return_value = f"{output_file} "
+        result = converter_interactive.get_output_file(input_file)
+        assert result == output_file.resolve()
+        
+        # Test with trailing spaces
+        mock_input.return_value = f"{output_file}   "
+        result = converter_interactive.get_output_file(input_file)
+        assert result == output_file.resolve()
+        
+        # Test quoted path with trailing space
+        mock_input.return_value = f'"{output_file} "'
+        result = converter_interactive.get_output_file(input_file)
+        assert result == output_file.resolve()
+    
+    @patch('builtins.input')
+    @patch('builtins.print')
+    def test_input_file_backslash_escaped_spaces(self, mock_print, mock_input, tmp_path):
+        """Should handle backslash-escaped spaces from macOS drag-and-drop."""
+        # Create a file with spaces in the name (simulating macOS drag-and-drop)
+        test_file = tmp_path / "file with spaces.csv"
+        test_file.write_text("Header\nValue\n")
+        
+        # Simulate macOS drag-and-drop: backslash-escaped spaces
+        # The path as it appears when dragged from Finder
+        escaped_path = str(test_file).replace(' ', r'\ ')
+        mock_input.return_value = escaped_path
+        
+        result = converter_interactive.get_input_file()
+        
+        # Should correctly parse and resolve to the actual file
+        assert result == test_file.resolve()
+    
+    @patch('builtins.input')
+    @patch('builtins.print')
+    def test_output_file_backslash_escaped_spaces(self, mock_print, mock_input, tmp_path):
+        """Should handle backslash-escaped spaces in output paths."""
+        input_file = tmp_path / "input.xlsx"
+        input_file.write_text("dummy")
+        
+        output_file = tmp_path / "output with spaces.csv"
+        
+        # Simulate macOS drag-and-drop: backslash-escaped spaces
+        escaped_path = str(output_file).replace(' ', r'\ ')
+        mock_input.return_value = escaped_path
+        
+        result = converter_interactive.get_output_file(input_file)
+        
+        # Should correctly parse and resolve to the expected output path
+        assert result == output_file.resolve()

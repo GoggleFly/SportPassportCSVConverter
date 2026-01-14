@@ -5,6 +5,8 @@ Prompts user for input and output file paths.
 """
 
 import sys
+import shlex
+import re
 from pathlib import Path
 
 # Add the project root directory to the path so we can import converter module
@@ -13,6 +15,78 @@ sys.path.insert(0, str(project_root))
 
 from converter.main import SportPassportConverter
 from converter.interactive import InteractiveCorrector
+
+
+def parse_file_path(path_input: str) -> str:
+    """
+    Parse and clean a file path from user input.
+    
+    Handles:
+    - Quoted paths (single or double quotes)
+    - Paths with spaces (quoted, unquoted, or backslash-escaped)
+    - Trailing whitespace after file extensions
+    - macOS drag-and-drop paths with backslash-escaped spaces
+    
+    Args:
+        path_input: Raw input string from user
+        
+    Returns:
+        Cleaned file path string
+    """
+    if not path_input:
+        return ""
+    
+    # First, strip leading/trailing whitespace
+    path_input = path_input.strip()
+    
+    if not path_input:
+        return ""
+    
+    # Always try to use shlex.split() first - it handles:
+    # - Quoted paths (single or double quotes)
+    # - Backslash-escaped spaces (macOS drag-and-drop)
+    # - Other shell escaping
+    try:
+        parsed = shlex.split(path_input, posix=True)
+        
+        if len(parsed) == 1:
+            # Single result - shlex successfully parsed it (handled quotes/escapes)
+            path = parsed[0]
+        elif len(parsed) > 1:
+            # Multiple results - means there were unquoted, unescaped spaces
+            # In this case, treat the entire original input as a single path
+            # (user likely pasted a path with spaces without quotes/escapes)
+            path = path_input
+        else:
+            # Empty result - might be empty quoted string
+            # Check if it was quoted and extract content
+            if (path_input.startswith('"') and path_input.endswith('"')) or \
+               (path_input.startswith("'") and path_input.endswith("'")):
+                path = path_input[1:-1].strip()
+            else:
+                path = path_input
+    except ValueError:
+        # shlex parsing failed (malformed quotes, etc.)
+        # Fall back to manual quote removal
+        if (path_input.startswith('"') and path_input.endswith('"')) or \
+           (path_input.startswith("'") and path_input.endswith("'")):
+            path = path_input[1:-1].strip()
+        else:
+            # Not quoted, use as-is (might have backslash escapes that shlex couldn't handle)
+            # Try to manually handle backslash-escaped spaces
+            path = path_input.replace('\\ ', ' ')
+    
+    # Trim trailing whitespace after file extension
+    # Match pattern: filename.extension followed by whitespace
+    # This regex finds a file extension pattern and any trailing whitespace after it
+    extension_pattern = r'(\.[a-zA-Z0-9]+)\s+$'
+    path = re.sub(extension_pattern, r'\1', path)
+    
+    # Also handle case where there's whitespace before the extension
+    # e.g., "file .csv " -> "file.csv"
+    path = re.sub(r'\s+\.([a-zA-Z0-9]+)\s*$', r'.\1', path)
+    
+    return path
 
 
 def get_input_file() -> Path:
@@ -27,13 +101,8 @@ def get_input_file() -> Path:
         print("Supported formats: .xlsx, .xls, .csv")
         print()
         
-        input_path = input("Input file path: ").strip()
-        
-        # Handle quoted paths (common when dragging files into terminal)
-        if input_path.startswith('"') and input_path.endswith('"'):
-            input_path = input_path[1:-1]
-        elif input_path.startswith("'") and input_path.endswith("'"):
-            input_path = input_path[1:-1]
+        input_path_raw = input("Input file path: ")
+        input_path = parse_file_path(input_path_raw)
         
         if not input_path:
             print("❌ Please enter a file path.")
@@ -81,13 +150,8 @@ def get_output_file(input_file: Path) -> Path:
     print(f"\nDefault (press Enter to use): {default_output}")
     print()
     
-    output_path = input("Output file path (or press Enter for default): ").strip()
-    
-    # Handle quoted paths
-    if output_path.startswith('"') and output_path.endswith('"'):
-        output_path = output_path[1:-1]
-    elif output_path.startswith("'") and output_path.endswith("'"):
-        output_path = output_path[1:-1]
+    output_path_raw = input("Output file path (or press Enter for default): ")
+    output_path = parse_file_path(output_path_raw)
     
     # Use default if empty
     if not output_path:

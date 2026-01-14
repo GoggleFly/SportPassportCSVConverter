@@ -2,6 +2,12 @@
 
 A command-line utility to convert Excel spreadsheets into compliant CSV format for Sport Passport import.
 
+## ⚠️ Important Disclaimer
+
+**This utility is NOT affiliated with, provided by, or supported by Sport Passport.**
+
+This is a convenience utility only, created to ease the sometimes painful process of data cleanup and alignment to the required format to allow for an easier life! It is provided as-is for those who need assistance preparing their data for Sport Passport import.
+
 ## Features
 
 - **Excel Input**: Read `.xlsx` or `.xls` files directly (recommended to avoid CSV parsing issues)

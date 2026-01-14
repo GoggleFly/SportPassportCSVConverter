@@ -23,6 +23,7 @@ from .corrector import Corrector
 from .interactive import InteractiveCorrector, UserAbort, DefaultOverrides
 from .row_detector import detect_rows_to_remove
 from .column_variations import find_column_matches, get_field_display_name
+from .banners import display_welcome_banner, display_step_separator, display_completion_banner
 
 
 console = Console()
@@ -68,11 +69,15 @@ class SportPassportConverter:
     def run(self) -> bool:
         """Run the full conversion process. Returns True on success."""
         try:
+            # Display welcome banner
+            display_welcome_banner()
+            
             # Step 0: Prompt for default overrides (postcode/email)
             if not self.auto_confirm and not self.default_overrides.has_overrides:
                 self.default_overrides = self.interactive.prompt_for_default_overrides()
             
             # Step 1: Load input file
+            display_step_separator("LOADING INPUT FILE", 1)
             self.interactive.display_info(f"Loading {self.input_path}...")
             raw_data = self._load_input()
             
@@ -90,7 +95,7 @@ class SportPassportConverter:
                             row[field_name] = default_value
             
             # Step 3: First pass - normalize and collect all auto-corrections
-            console.print()
+            display_step_separator("ANALYZING DATA", 3)
             self.interactive.display_info("Analyzing data and collecting corrections...")
             
             # Fields to skip validation for (will be overwritten by defaults)
@@ -147,6 +152,8 @@ class SportPassportConverter:
                         ))
             
             # Ask user to accept or reject auto-corrections
+            if all_auto_corrections and not self.auto_confirm:
+                display_step_separator("REVIEWING CORRECTIONS", 4)
             user_accepted_auto = True
             if all_auto_corrections and not self.auto_confirm:
                 user_accepted_auto = self.interactive.prompt_review_auto_corrections(
@@ -155,6 +162,9 @@ class SportPassportConverter:
                 )
             
             # Step 5: Apply corrections based on user choice
+            # Only show banner if we actually have corrections to apply
+            if pending_auto_fixes:
+                display_step_separator("APPLYING CORRECTIONS", 5)
             valid_rows = []
             
             for idx, normalized in enumerate(normalized_rows):
@@ -229,6 +239,7 @@ class SportPassportConverter:
                 self.interactive.prompt_view_corrections_log(self.applied_corrections)
             
             # Step 7: Display summary
+            display_step_separator("SUMMARY", 7)
             self.interactive.display_summary(
                 total_rows=len(raw_data),
                 auto_corrections=self.corrector.get_summary(),
@@ -237,6 +248,9 @@ class SportPassportConverter:
             
             # Step 8: Review changes before export
             # Always show review prompt if there are changes (even in auto-confirm mode)
+            total_changes = (len(self.applied_corrections) if self.applied_corrections else 0) + (len(self.interactive.manual_corrections) if self.interactive.manual_corrections else 0)
+            if total_changes > 0:
+                display_step_separator("REVIEWING CHANGES", 8)
             proceed_after_review = self.interactive.prompt_review_changes_before_export(
                 self.applied_corrections,
                 self.interactive.manual_corrections,
@@ -246,8 +260,10 @@ class SportPassportConverter:
                 return False
             
             # Step 9: Export
+            display_step_separator("EXPORTING RESULTS", 9)
             if not valid_rows:
                 self.interactive.display_error("No valid rows to export")
+                display_completion_banner(success=False)
                 return False
             
             # Filter out skipped rows
@@ -267,31 +283,38 @@ class SportPassportConverter:
             if should_export:
                 self._export_csv(valid_rows)
                 self.interactive.display_success(f"Exported to {self.output_path}")
+                display_completion_banner(success=True)
                 return True
             else:
                 self.interactive.display_info("Export cancelled")
+                display_completion_banner(success=False)
                 return False
                 
         except UserAbort as e:
             console.print()
             self.interactive.display_warning(f"Aborted: {e}")
+            display_completion_banner(success=False)
             return False
         except KeyboardInterrupt:
             console.print()
             self.interactive.display_warning("Interrupted by user")
+            display_completion_banner(success=False)
             return False
         except ValueError as e:
             # Check if this is a missing mandatory columns error
             if "Missing mandatory columns" in str(e):
                 # Error already displayed in display_missing_mandatory_columns()
+                display_completion_banner(success=False)
                 return False
             # Other ValueError - display and exit
             console.print()
             self.interactive.display_error(f"Error: {e}")
+            display_completion_banner(success=False)
             return False
         except Exception as e:
             console.print()
             self.interactive.display_error(f"Unexpected error: {e}")
+            display_completion_banner(success=False)
             raise
     
     def _get_correction_type(self, error) -> str:
