@@ -295,7 +295,13 @@ chmod +x build-package.sh
 **Option 2: Standalone Executable (interactive version, no Python required)**
 ```bash
 chmod +x build-executable.sh
+
+# Build for native architecture
 ./build-executable.sh
+
+# Or build for x64 (Intel) - useful on Apple Silicon Macs
+./build-executable.sh x64
+
 # Creates interactive executable in dist/ directory
 ```
 

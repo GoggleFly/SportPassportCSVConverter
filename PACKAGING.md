@@ -105,11 +105,22 @@ pip install pyinstaller
 # Make build script executable (first time only)
 chmod +x build-executable.sh
 
-# Build the executable
+# Build for native architecture (auto-detected)
 ./build-executable.sh
+
+# Build for x64 (Intel) architecture (useful on Apple Silicon)
+./build-executable.sh x64
+
+# Build for ARM64 (Apple Silicon) architecture
+./build-executable.sh arm64
 ```
 
 This creates `dist/sport-passport-converter` (or `.exe` on Windows) - the interactive version that prompts users for input and output file paths.
+
+**Cross-Architecture Building (macOS):**
+- On Apple Silicon Macs, you can build x64 executables using Rosetta 2 by running `./build-executable.sh x64`
+- The script will automatically use `arch -x86_64` to run Python in x64 mode
+- Verify the architecture after building with: `file dist/sport-passport-converter`
 
 **Note on Startup Time**: The standalone executable may take 10-30 seconds to start, especially on first run, as it extracts bundled Python libraries to a temporary directory. A loading message will be displayed to indicate the application is starting. This is normal behavior for PyInstaller onefile executables with large dependencies like pandas.
 
