@@ -111,6 +111,8 @@ chmod +x build-executable.sh
 
 This creates `dist/sport-passport-converter` (or `.exe` on Windows) - the interactive version that prompts users for input and output file paths.
 
+**Note on Startup Time**: The standalone executable may take 10-30 seconds to start, especially on first run, as it extracts bundled Python libraries to a temporary directory. A loading message will be displayed to indicate the application is starting. This is normal behavior for PyInstaller onefile executables with large dependencies like pandas.
+
 ### Distributing the Executable
 
 1. **Test the executable locally**:

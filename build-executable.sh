@@ -21,6 +21,13 @@ if ! python3 -m pip show pyinstaller &> /dev/null; then
     python3 -m pip install pyinstaller
 fi
 
+# Verify all dependencies are installed
+echo "Verifying dependencies are installed..."
+python3 -c "import pandas, openpyxl, pydantic, rich, questionary, dateutil; print('✓ All dependencies found')" || {
+    echo "Error: Some dependencies are missing. Installing from requirements.txt..."
+    python3 -m pip install -r requirements.txt
+}
+
 # Clean previous builds
 echo "Cleaning previous builds..."
 rm -rf build/
@@ -36,6 +43,9 @@ echo "✓ Build complete!"
 echo ""
 echo "Executable is in the dist/ directory:"
 ls -lh dist/
+echo ""
+echo "Note: The executable may take 10-30 seconds to start on first run"
+echo "      as it extracts bundled libraries. A loading message will be displayed."
 
 # Detect OS and provide appropriate instructions
 if [[ "$OSTYPE" == "darwin"* ]]; then

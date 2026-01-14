@@ -9,9 +9,18 @@ import shlex
 import re
 from pathlib import Path
 
+# Show loading message immediately if running as executable
+# (PyInstaller sets sys.frozen to True)
+if getattr(sys, 'frozen', False):
+    print("Initializing Sport Passport CSV Converter...", flush=True)
+
 # Add the project root directory to the path so we can import converter module
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
+
+# Import heavy dependencies after showing initial message
+if getattr(sys, 'frozen', False):
+    print("Loading modules...", flush=True)
 
 from converter.main import SportPassportConverter
 from converter.interactive import InteractiveCorrector

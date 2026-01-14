@@ -25,6 +25,7 @@ MANIFEST
 
 # PyInstaller
 *.spec.bak
+# Runtime hooks are tracked, but build artifacts are not
 
 # Virtual Environment
 venv/
