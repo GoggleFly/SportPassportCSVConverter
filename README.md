@@ -299,8 +299,12 @@ chmod +x build-executable.sh
 # Build for native architecture
 ./build-executable.sh
 
-# Or build for x64 (Intel) - useful on Apple Silicon Macs
+# Or build for x64 (Intel) - requires x86_64 Python installed
 ./build-executable.sh x64
+
+# Alternative: Build x64 using Docker (no x86_64 Python needed)
+chmod +x build-x64-docker.sh
+./build-x64-docker.sh
 
 # Creates interactive executable in dist/ directory
 ```

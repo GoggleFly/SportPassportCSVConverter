@@ -20,14 +20,68 @@ echo "Current architecture: $CURRENT_ARCH"
 if [[ "$TARGET_ARCH" == "x64" || "$TARGET_ARCH" == "x86_64" ]]; then
     if [[ "$CURRENT_ARCH" == "arm64" ]]; then
         echo "Building for x64 (Intel) on Apple Silicon..."
-        echo "Using Rosetta 2 (arch -x86_64) to build x64 executable"
-        PYTHON_CMD="arch -x86_64 python3"
-        # Check if x64 Python is available
-        if ! $PYTHON_CMD -c "import sys; print(sys.executable)" &>/dev/null; then
-            echo "Error: x64 Python interpreter not available via Rosetta 2"
-            echo "You may need to install a universal Python or use a different Python installation"
+        
+        # Try to find an x86_64 Python interpreter
+        PYTHON_CMD=""
+        
+        # Check system Python first
+        if /usr/bin/python3 -c "import platform; exit(0 if platform.machine() == 'x86_64' else 1)" 2>/dev/null; then
+            echo "Using system Python (/usr/bin/python3) for x64 build"
+            PYTHON_CMD="/usr/bin/python3"
+        # Check Homebrew x86_64 Python (if Homebrew was installed for Intel)
+        elif [[ -f "/usr/local/bin/python3" ]] && file /usr/local/bin/python3 2>/dev/null | grep -q "x86_64"; then
+            echo "Using Homebrew x86_64 Python (/usr/local/bin/python3)"
+            PYTHON_CMD="/usr/local/bin/python3"
+        # Check pyenv for x86_64 Python
+        elif command -v pyenv &> /dev/null; then
+            echo "Checking for x86_64 Python in pyenv..."
+            # Look for x86_64 Python in pyenv
+            PYENV_X64=$(find ~/.pyenv/versions -name python3 -type f 2>/dev/null | while read py; do
+                if file "$py" 2>/dev/null | grep -q "x86_64"; then
+                    echo "$py"
+                    break
+                fi
+            done)
+            
+            if [[ -n "$PYENV_X64" && -x "$PYENV_X64" ]]; then
+                echo "Found x86_64 Python in pyenv: $PYENV_X64"
+                PYTHON_CMD="$PYENV_X64"
+            fi
+        fi
+        
+        # If no x86_64 Python found, provide installation instructions
+        if [[ -z "$PYTHON_CMD" ]]; then
+            echo ""
+            echo "❌ Error: No x86_64 Python interpreter found."
+            echo ""
+            echo "To build x64 executables on Apple Silicon, you need an x86_64 Python interpreter."
+            echo ""
+            echo "Installation Options:"
+            echo ""
+            echo "Option 1: Install x86_64 Python via pyenv (Recommended)"
+            echo "  arch -x86_64 pyenv install 3.11.9"
+            echo "  # Then set it as a local version or use it directly"
+            echo ""
+            echo "Option 2: Install x86_64 Homebrew and Python"
+            echo "  # First install Homebrew for Intel:"
+            echo "  arch -x86_64 /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+            echo "  # Then install Python:"
+            echo "  arch -x86_64 /usr/local/bin/brew install python@3.11"
+            echo ""
+            echo "Option 3: Use Docker to build x64 executable"
+            echo "  # See PACKAGING.md for Docker build instructions"
+            echo ""
             exit 1
         fi
+        
+        # Verify the Python is actually x86_64
+        PYTHON_ARCH=$($PYTHON_CMD -c "import platform; print(platform.machine())" 2>/dev/null)
+        if [[ "$PYTHON_ARCH" != "x86_64" ]]; then
+            echo "Error: Selected Python interpreter is $PYTHON_ARCH, not x86_64"
+            echo "Python path: $PYTHON_CMD"
+            exit 1
+        fi
+        echo "Verified: Python architecture is x86_64"
     else
         echo "Building for x64 (native)..."
         PYTHON_CMD="python3"
@@ -97,6 +151,9 @@ echo "Usage:"
 echo "  ./build-executable.sh          # Build for native architecture"
 echo "  ./build-executable.sh x64      # Build for x64 (Intel) architecture"
 echo "  ./build-executable.sh arm64   # Build for ARM64 (Apple Silicon) architecture"
+echo ""
+echo "Alternative for x64 builds on Apple Silicon:"
+echo "  ./build-x64-docker.sh          # Build x64 executable using Docker (no x86_64 Python needed)"
 
 # Detect OS and provide appropriate instructions
 if [[ "$OSTYPE" == "darwin"* ]]; then

@@ -118,9 +118,14 @@ chmod +x build-executable.sh
 This creates `dist/sport-passport-converter` (or `.exe` on Windows) - the interactive version that prompts users for input and output file paths.
 
 **Cross-Architecture Building (macOS):**
-- On Apple Silicon Macs, you can build x64 executables using Rosetta 2 by running `./build-executable.sh x64`
-- The script will automatically use `arch -x86_64` to run Python in x64 mode
+- On Apple Silicon Macs, you can build x64 executables by running `./build-executable.sh x64`
+- **Important**: You need an x86_64 Python interpreter installed. The script will search for one, but if none is found, you'll need to install it first.
+- **Installing x86_64 Python via pyenv** (recommended):
+  ```bash
+  arch -x86_64 pyenv install 3.11.9
+  ```
 - Verify the architecture after building with: `file dist/sport-passport-converter`
+- Note: Simply using `arch -x86_64 python3` won't work if your Python is ARM64 - you need an actual x86_64 Python binary
 
 **Note on Startup Time**: The standalone executable may take 10-30 seconds to start, especially on first run, as it extracts bundled Python libraries to a temporary directory. A loading message will be displayed to indicate the application is starting. This is normal behavior for PyInstaller onefile executables with large dependencies like pandas.
 
@@ -164,11 +169,38 @@ This creates `dist/sport-passport-converter` (or `.exe` on Windows) - the intera
 
 ---
 
-## Option 3: Distribution via Docker (Advanced)
+## Option 3: Building x64 Executables on Apple Silicon via Docker
+
+If you're on Apple Silicon and need to build x64 executables, Docker is often the easiest solution:
+
+### Build x64 Executable in Docker
+
+```bash
+# Build x64 executable using Docker
+docker run --rm -v "$(pwd):/src" -w /src python:3.11-slim bash -c "
+    pip install pyinstaller -q &&
+    pip install -r requirements.txt -q &&
+    python -m PyInstaller sport-passport-converter.spec --clean --noconfirm
+"
+
+# The executable will be in dist/ directory
+```
+
+Or create a simple build script:
+
+```bash
+#!/bin/bash
+# build-x64-docker.sh
+docker run --rm \
+    -v "$(pwd):/src" \
+    -w /src \
+    python:3.11-slim \
+    bash -c "pip install pyinstaller -q && pip install -r requirements.txt -q && python -m PyInstaller sport-passport-converter.spec --clean --noconfirm"
+```
+
+### Alternative: Docker Container Distribution
 
 If you want to distribute as a Docker container:
-
-### Create Dockerfile
 
 ```dockerfile
 FROM python:3.11-slim
